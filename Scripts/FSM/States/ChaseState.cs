@@ -25,15 +25,14 @@ public class ChaseState : IState<EnemyStateData<Enemy>>
     public void OnUpdate()
     {
         _data.NavMeshAgent.SetDestination(_data.Player.position);
-
         //eğer ki takip mesafesinde ise takip etme state'ine geçecek
         if (_data.RootClass.IsTooCloseToMe())
         {
-            _stateMachineHandler.AddState(new AttackState(_stateMachineHandler, _data));
+            _stateMachineHandler.ChangeState(new AttackState(_stateMachineHandler, _data));
         }
         else if (!_data.RootClass.CanIChase())
         {
-            _stateMachineHandler.AddState(new IdleState(_stateMachineHandler, _data));
+            _stateMachineHandler.ChangeState(new IdleState(_stateMachineHandler, _data));
         }
     }
 

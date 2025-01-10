@@ -34,7 +34,7 @@ public class Enemy : MonoBehaviour, IBaseData
         _enemyStateData = new("Enemy", _animator, this, _statusText, _navMeshAgnet, _player);
 
         //başlangıçta Idle State'e geçiriyoruz;
-        _stateMachine.AddState(new IdleState(_stateMachine, _enemyStateData));
+        _stateMachine.ChangeState(new IdleState(_stateMachine, _enemyStateData));
     }
 
     void Update()

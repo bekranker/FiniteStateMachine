@@ -53,7 +53,7 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
         if (_data.RootClass.CanIChase())
         {
             CancelPatrolling();
-            _stateMachineHandler.AddState(new ChaseState(_stateMachineHandler, _data));
+            _stateMachineHandler.ChangeState(new ChaseState(_stateMachineHandler, _data));
         }
     }
 
@@ -99,9 +99,11 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
                 await UniTask.Yield();
             }
 
+            _data.AnimatorComponent.SetBool("Walk", false);
             // Wait for 2 seconds at the point
             await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: token);
             Debug.Log($"Patrolled to point: {nextPoint.name}");
+            _data.AnimatorComponent.SetBool("Walk", true);
 
             // Re-enqueue the point to keep patrolling indefinitely
             _points.Enqueue(nextPoint);

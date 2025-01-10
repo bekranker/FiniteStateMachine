@@ -17,7 +17,7 @@ public class AttackState : IState<EnemyStateData<Enemy>>
     public void OnEnter()
     {
         _data.AnimatorComponent.SetBool("Attack", true);
-        _data.StatusText.text = $"{_data.Name} - State: Patrolling";
+        _data.StatusText.text = $"{_data.Name} - State: Attack";
 
 
 
@@ -28,7 +28,7 @@ public class AttackState : IState<EnemyStateData<Enemy>>
     {
         if (_data.RootClass.CanIChase())
         {
-            _stateMachineHandler.AddState(new ChaseState(_stateMachineHandler, _data));
+            _stateMachineHandler.ChangeState(new ChaseState(_stateMachineHandler, _data));
         }
 
         Debug.Log("Enemy is Attacking");
