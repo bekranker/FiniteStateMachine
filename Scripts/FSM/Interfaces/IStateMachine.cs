@@ -4,7 +4,7 @@ public interface IStateMachine<T> where T : IBaseData
     //her frame'de child statelerden en üsttekini (i.e aktif olan state'i) execute edebilmemiz için gerekli
     void UpdateStates();
     //Stack'e state eklemek için
-    void AddState(IState<T> state, T stateData);
+    void AddState(IState<T> state);
     //Stack'den state çıkartmak için
     void RemoveState();
 }
