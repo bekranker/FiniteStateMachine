@@ -19,8 +19,7 @@ public class IdleState : IState<EnemyStateData<Enemy>>
     public async void OnEnter()
     {
         Debug.Log("Enemy entered Idle State.");
-        _data.AnimatorComponent.SetTrigger("Idle");
-        _data.StatusText.text = "State: Idle";
+        _data.StatusText.text = $"{_data.Name} - State: Idle";
         await delayedCall();
     }
     private async UniTask delayedCall()
