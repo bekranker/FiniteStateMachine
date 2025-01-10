@@ -5,6 +5,4 @@ public interface IStateMachine<T> where T : IBaseData
     void UpdateStates();
     //Stack'e state eklemek için
     void AddState(IState<T> state);
-    //Stack'den state çıkartmak için
-    void RemoveState();
 }

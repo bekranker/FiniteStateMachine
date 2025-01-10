@@ -20,7 +20,7 @@ public class Enemy : MonoBehaviour, IBaseData
     [Header("---Props")]
     [Space(10)]
     [SerializeField] private float _speed;
-    [SerializeField] private Vector2 _minMaxChaseRange;
+    [SerializeField] private float _chaseTriggerRange;
     private StateMachine<EnemyStateData<Enemy>> _stateMachine;
     private EnemyStateData<Enemy> _enemyStateData;
     #endregion
@@ -48,10 +48,9 @@ public class Enemy : MonoBehaviour, IBaseData
     {
         //player ile düşman arasında ki mesafe;
         float distance = Vector3.Distance(_player.position, transform.position);
-        Debug.Log(distance);
 
         //düşman takip edebilecek bir mesafede;
-        if (distance <= _minMaxChaseRange.x && distance > _minMaxChaseRange.y)
+        if (distance <= _chaseTriggerRange && distance > _navMeshAgnet.stoppingDistance)
         {
             //takip edebilir;
             return true;
@@ -61,7 +60,7 @@ public class Enemy : MonoBehaviour, IBaseData
     public bool IsTooCloseToMe()
     {
         float distance = Vector3.Distance(_player.position, transform.position);
-        return distance < _minMaxChaseRange.y;
+        return distance <= _navMeshAgnet.stoppingDistance;
     }
 }
 

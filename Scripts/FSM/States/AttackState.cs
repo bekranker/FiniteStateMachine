@@ -26,14 +26,11 @@ public class AttackState : IState<EnemyStateData<Enemy>>
 
     public void OnUpdate()
     {
-        if (!_data.RootClass.IsTooCloseToMe() && _data.RootClass.CanIChase())
+        if (_data.RootClass.CanIChase())
         {
             _stateMachineHandler.AddState(new ChaseState(_stateMachineHandler, _data));
         }
-        else if (!_data.RootClass.CanIChase())
-        {
-            _stateMachineHandler.AddState(new IdleState(_stateMachineHandler, _data));
-        }
+
         Debug.Log("Enemy is Attacking");
     }
 
