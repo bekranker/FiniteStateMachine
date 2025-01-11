@@ -57,7 +57,6 @@ void Start()
 }
 ```
 
-```markdown
 ## 📂 How the FSM Works
 
 1. **State Transitions:** Each state (`IdleState`, `AttackState`, etc.) implements the `IState<T>` interface and defines behavior for `OnEnter()`, `OnUpdate()`, and `OnExit()`.
@@ -83,4 +82,3 @@ void Start()
 ## 📃 License
 
 This project is licensed under the MIT License - feel free to modify and use it for your own projects.
-```
