@@ -56,3 +56,31 @@ void Start()
     _stateMachine.ChangeState(new IdleState(_stateMachine, _enemyStateData));
 }
 ```
+
+```markdown
+## 📂 How the FSM Works
+
+1. **State Transitions:** Each state (`IdleState`, `AttackState`, etc.) implements the `IState<T>` interface and defines behavior for `OnEnter()`, `OnUpdate()`, and `OnExit()`.
+2. **State Changes:** The `StateMachine<T>` class handles transitions via the `ChangeState()` method.
+3. **State Execution:** The active state is updated every frame using `UpdateStates()`.
+
+---
+
+## 🧩 Extending the System
+
+### Creating a New State:
+
+1. Create a new class implementing `IState<T>`.
+2. Define the behavior for `OnEnter()`, `OnUpdate()`, and `OnExit()`.
+3. Add state transitions based on conditions.
+
+### Adding Custom Data:
+
+- Modify `EnemyStateData<T>` to include custom properties needed for new behaviors.
+
+---
+
+## 📃 License
+
+This project is licensed under the MIT License - feel free to modify and use it for your own projects.
+```
