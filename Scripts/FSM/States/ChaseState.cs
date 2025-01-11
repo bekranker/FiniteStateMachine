@@ -13,18 +13,18 @@ public class ChaseState : IState<EnemyStateData<Enemy>>
         _data = data;
     }
 
-    //koşu animasyonunu tetikliyoruz
+    //koşu animasyonunu tetikliyoruz;
     public void OnEnter()
     {
         _data.AnimatorComponent.SetBool("Run", true);
         _data.StatusText.text = $"{_data.Name} - State: Chase";
         Debug.Log("Player entered Chase State.");
-        _data.NavMeshAgent.SetDestination(_data.Player.position);
     }
 
+    //Eğer ki çok yakında ise oyuncu attack state'e geçiyor, Eğer ki takip edemeyeceğimiz bir mesafede ise Idle State'e geçiyor;
     public void OnUpdate()
     {
-        _data.NavMeshAgent.SetDestination(_data.Player.position);
+        _data.RootClass.Go(_data.Player.position);
         //eğer ki takip mesafesinde ise takip etme state'ine geçecek
         if (_data.RootClass.IsTooCloseToMe())
         {
@@ -36,6 +36,7 @@ public class ChaseState : IState<EnemyStateData<Enemy>>
         }
     }
 
+    //Çıkarken Run animasyonunu kapattık;
     public void OnExit()
     {
         _data.AnimatorComponent.SetBool("Run", false);

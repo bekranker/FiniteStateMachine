@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks; // Ensure UniTask is installed
 using UnityEngine;
-using UnityEngine.AI;
 using System.Threading;
 
 public class PatrollingState : IState<EnemyStateData<Enemy>>
@@ -11,9 +10,7 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
     private EnemyStateData<Enemy> _data;
 
     private Queue<Transform> _points = new();
-    private NavMeshAgent _agent;
     private bool _isPatrolling = false;
-
     private CancellationTokenSource _cancellationTokenSource;
 
     // Constructor
@@ -21,20 +18,22 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
     {
         _stateMachineHandler = stateMachine;
         _data = data;
-        _agent = _data.NavMeshAgent; // Assuming Enemy has a NavMeshAgent
     }
 
     public void OnEnter()
     {
-        if (!_agent.isOnNavMesh)
+        //düşman bakelenen alanda mı kontrol ediyoruz, değilse reutn ediyoruz (hataları önlemek için ama isterseniz kaldırabilirsiniz) ;
+        if (!_data.NavMeshAgent.isOnNavMesh)
         {
             Debug.LogError("NavMeshAgent is not on a valid NavMesh. Patrolling cannot start.");
             return;
         }
-        _points.Clear();
-        _data.AnimatorComponent.SetBool("Walk", true);
+        //Debug amaçlı düşman üzerinde ki yazıyı güncellediğim yer;
         _data.StatusText.text = $"{_data.Name} - State: Patrolling";
+        //Walk animasyonunu başlatıyoruz (Loopta olduğu için kapatana dek çalışacaktır);
+        _data.AnimatorComponent.SetBool("Walk", true);
 
+        //UniTask'i başka state'e geçerken iptal edebilmek için bir CancellationToken oluşturuyorum;
         _cancellationTokenSource = new CancellationTokenSource();
 
         // Start patrolling
@@ -49,7 +48,7 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
 
     public void OnUpdate()
     {
-        // Switch to ChaseState if the enemy can chase
+        // eğer oyuncu görüş alanında ise kovalayacak olan state'e geçiyor.
         if (_data.RootClass.CanIChase())
         {
             CancelPatrolling();
@@ -57,17 +56,20 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
         }
     }
 
+    //bu state'den çıkarken animasyonu kapatıyoruz, ayrıca durmadığından emin olmak için navmesh isStopped = false diyoruz;
+    //UniTask'i iptal edip state'den çıkıyoruz;
     public void OnExit()
     {
         CancelPatrolling();
         _data.AnimatorComponent.SetBool("Walk", false);
-        _agent.isStopped = true; // Stop NavMeshAgent movement
+        _data.NavMeshAgent.isStopped = false; // Stop NavMeshAgent movement
         Debug.Log("Player exiting Patrolling State.");
     }
 
+    //Uni Task yerine IEnumerator kullanılabilirdi fakat UniTask dah optimizde ve Monobehaviour miras almama gerek kalmıyor(yada RootClass'a ekstra ulaşmama gerek kalmıyor) ;
     private async UniTaskVoid Patrol(CancellationToken token)
     {
-        // Enqueue all patrol points if the queue is empty
+        //eğer ki gidilecek başka point yoksa _data.RootClass'dan pointleri alıp tekrardan sıraya koyuyoruz;
         if (_points.Count == 0)
         {
             foreach (Transform item in _data.RootClass.Points)
@@ -76,8 +78,10 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
             }
         }
 
-        while (_isPatrolling && _points.Count > 0)
+        //gidilecek başka point yoksa hata almamak için break olacak;
+        while (_points.Count > 0)
         {
+            //eğer unitask iptal edilirse burası tetiklenecek
             if (token.IsCancellationRequested)
             {
                 Debug.Log("Patrolling Cancelled");
@@ -85,31 +89,33 @@ public class PatrollingState : IState<EnemyStateData<Enemy>>
             }
 
             Transform nextPoint = _points.Dequeue();
-            if (!_agent.isOnNavMesh)
-            {
-                Debug.LogError("NavMeshAgent is no longer on the NavMesh. Aborting patrol.");
-                return;
-            }
+            _data.RootClass.Go(nextPoint.position);
 
-            _agent.SetDestination(nextPoint.position);
+            // Yürümeye başladığında animasyonu aç;
+            _data.AnimatorComponent.SetBool("Walk", true);
 
-            // Wait for the agent to reach the point
-            while (!_agent.pathPending && _agent.remainingDistance > _agent.stoppingDistance)
+
+            // düşmanın hedefe ulaşmasını bekliyoruz;
+            while (_data.NavMeshAgent.pathPending || _data.NavMeshAgent.remainingDistance > _data.NavMeshAgent.stoppingDistance)
             {
                 await UniTask.Yield();
             }
 
+            // Noktaya ulaşıldığında animasyonu kapat;
+            await UniTask.NextFrame();
             _data.AnimatorComponent.SetBool("Walk", false);
-            // Wait for 2 seconds at the point
+            // 2 saniye düşman nefesleniyor
             await UniTask.Delay(TimeSpan.FromSeconds(2), cancellationToken: token);
-            Debug.Log($"Patrolled to point: {nextPoint.name}");
-            _data.AnimatorComponent.SetBool("Walk", true);
 
-            // Re-enqueue the point to keep patrolling indefinitely
+            Debug.Log($"Patrolled to point: {nextPoint.name}");
+
+
+            // az önce vardığımız pointi sıraya tekrar ekliyoruz ki loopa girsin;
             _points.Enqueue(nextPoint);
         }
     }
 
+    //Uni Task iptal ettiğimiz kısım burası;    
     private void CancelPatrolling()
     {
         if (_cancellationTokenSource != null)

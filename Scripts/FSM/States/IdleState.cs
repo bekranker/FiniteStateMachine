@@ -16,11 +16,13 @@ public class IdleState : IState<EnemyStateData<Enemy>>
         _data = data;
     }
 
+
+    //Idle State'de durmmamız gerektiği için isStopped = true olarka değiştirdik;
     public async void OnEnter()
     {
         Debug.Log("Enemy entered Idle State.");
         _data.StatusText.text = $"{_data.Name} - State: Idle";
-
+        _data.NavMeshAgent.isStopped = true;
         _cancellationTokenSource = new CancellationTokenSource();
 
         try
@@ -33,6 +35,7 @@ public class IdleState : IState<EnemyStateData<Enemy>>
         }
     }
 
+    //2 saniye bekliyoruz, eğer ki oyuncu gözükmediyse Patrolling State'e geçiyor;
     private async UniTask delayedCall(CancellationToken token)
     {
         // Wait for 2 seconds or cancel
@@ -45,7 +48,7 @@ public class IdleState : IState<EnemyStateData<Enemy>>
 
     public void OnUpdate()
     {
-        // Transition to ChaseState if the enemy can chase
+        // eğer oyuncuyu görürsek anında takip moduna geçiyoruz;
         if (_data.RootClass.CanIChase())
         {
             CancelTask();
@@ -53,12 +56,14 @@ public class IdleState : IState<EnemyStateData<Enemy>>
         }
     }
 
+    //çıkış yaparken durmadığımızdan emin oluyoruz;
     public void OnExit()
     {
         Debug.Log("Player exiting Idle State.");
+        _data.NavMeshAgent.isStopped = false;
         CancelTask();
     }
-
+    //oyuncuyu görürsek takipe geçmeden önce DelayCall fonksiyonunu Kill etmek için token ile UniTask'i Cancellıyoruz;
     private void CancelTask()
     {
         if (_cancellationTokenSource != null)

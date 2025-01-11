@@ -62,6 +62,11 @@ public class Enemy : MonoBehaviour, IBaseData
         float distance = Vector3.Distance(_player.position, transform.position);
         return distance <= _navMeshAgnet.stoppingDistance;
     }
+    public void Go(Vector3 targetPos)
+    {
+        _navMeshAgnet.SetDestination(targetPos);
+        _navMeshAgnet.isStopped = false;
+    }
 }
 
 /* Şimdi burada bir tık işler karışmış gibi gözüküyor ama aslında gayet açık ve kolay. T olarak herhangi bir IBaseData'yı miras alan classı ya da interface'i RootClass olarak atayabiliriz;
